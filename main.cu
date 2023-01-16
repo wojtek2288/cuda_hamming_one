@@ -4,6 +4,7 @@
 #include <time.h>
 #include "device_launch_parameters.h"
 #include "cpu.h"
+#include "gpu.cuh"
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -29,15 +30,26 @@ int main(int argc, char *argv[])
     }
     input.close();
 
-    auto cpuPairs = solveWithCpu(bitSequences);
-    ofstream output("output.txt");
+    // cout << "Starting cpu" << endl;
+    // auto cpuPairs = solveWithCpu(bitSequences);
+    cout << "Starting gpu" << endl;
+    auto gpuPairs = solveWithGpu(bitSequences);
 
-    for (auto pair : cpuPairs)
+    // ofstream cpu_output("output_cpu.txt");
+    ofstream gpu_output("output_gpu.txt");
+
+    // for (auto pair : cpuPairs)
+    // {
+    //     cpu_output << pair.first << endl;
+    //     cpu_output << pair.second << endl;
+    // }
+
+    for (auto pair : gpuPairs)
     {
-        cout << pair.first << endl;
-        cout << pair.second << endl;
-        output << pair.first << endl;
-        output << pair.second << endl;
+        gpu_output << pair.first << endl;
+        gpu_output << pair.second << endl;
     }
-    output.close();
+
+    // cpu_output.close();
+    gpu_output.close();
 }
