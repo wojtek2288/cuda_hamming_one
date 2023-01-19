@@ -39,7 +39,7 @@ __global__ void findHammingDistance(int *d_bitSequences, int *d_output, int vect
         }
         if (hammingDistance == 1)
         {
-            atomicCAS(&d_output[idx * vectorCount + i], -1, 1);
+            atomicAdd(&d_output[idx * vectorCount + i], 2);
         }
     }
 }

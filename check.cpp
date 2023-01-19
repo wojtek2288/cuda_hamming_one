@@ -47,7 +47,7 @@ int main(int argc, char **argv)
 
     ifstream file(argv[1]);
     string line;
-    int counter = 0;
+    int counter = 1;
 
     while (getline(file, line))
     {
