@@ -28,5 +28,7 @@ vector<pair<string, string>> solveWithCpu(vector<string> bitSequences)
             }
         }
     }
+
+    std::cout << "Number of pairs: " << pairs.size() << std::endl;
     return pairs;
 }
