@@ -1,10 +1,8 @@
 #include <stdlib.h>
 #include <algorithm>
 #include <time.h>
-
 #include "cpu.h"
 #include "defines.h"
-
 #include <iostream>
 #include <vector>
 using namespace std;

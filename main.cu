@@ -13,7 +13,7 @@ using namespace std;
 
 int main(int argc, char *argv[])
 {
-    if (argc != 2)
+    if (argc != 3)
     {
         cout << "Wrong number of arguments" << endl;
         return 1;
@@ -30,26 +30,32 @@ int main(int argc, char *argv[])
     }
     input.close();
 
-    // cout << "Starting cpu" << endl;
-    // auto cpuPairs = solveWithCpu(bitSequences);
-    cout << "Starting gpu" << endl;
-    auto gpuPairs = solveWithGpu(bitSequences);
-
-    // ofstream cpu_output("output_cpu.txt");
-    ofstream gpu_output("output_gpu.txt");
-
-    // for (auto pair : cpuPairs)
-    // {
-    //     cpu_output << pair.first << endl;
-    //     cpu_output << pair.second << endl;
-    // }
-
-    for (auto pair : gpuPairs)
+    if (string(argv[2]) == "--cpu")
     {
-        gpu_output << pair.first << endl;
-        gpu_output << pair.second << endl;
-    }
+        ofstream cpu_output("output_cpu.txt");
 
-    // cpu_output.close();
-    gpu_output.close();
+        cout << "Starting cpu" << endl;
+        auto cpuPairs = solveWithCpu(bitSequences);
+
+        for (auto pair : cpuPairs)
+        {
+            cpu_output << pair.first << ", " << pair.second << endl;
+        }
+
+        cpu_output.close();
+    }
+    else if (string(argv[2]) == "--gpu")
+    {
+        ofstream gpu_output("output_gpu.txt");
+
+        cout << "Starting gpu" << endl;
+        auto gpuPairs = solveWithGpu(bitSequences);
+
+        for (auto pair : gpuPairs)
+        {
+            gpu_output << pair.first << ", " << pair.second << endl;
+        }
+
+        gpu_output.close();
+    }
 }
