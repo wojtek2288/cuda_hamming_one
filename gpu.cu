@@ -35,10 +35,7 @@ __global__ void findHammingDistance(int *d_bitSequences, int *d_output, int vect
         int hammingDistance = 0;
         for (int j = 0; j < vectorLength; j++)
         {
-            if ((d_bitSequences[idx * vectorLength + j] != d_bitSequences[i * vectorLength + j]))
-            {
-                hammingDistance++;
-            }
+            hammingDistance += __popc(d_bitSequences[idx * vectorLength + j] ^ d_bitSequences[i * vectorLength + j]);
         }
         if (hammingDistance == 1)
         {

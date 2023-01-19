@@ -33,9 +33,15 @@ int main(int argc, char *argv[])
     if (string(argv[2]) == "--cpu")
     {
         ofstream cpu_output("output_cpu.txt");
+        clock_t executionStart, executionEnd;
 
         cout << "Starting cpu" << endl;
+
+        executionStart = clock();
         auto cpuPairs = solveWithCpu(bitSequences);
+        executionEnd = clock();
+
+        cout << "Cpu took: " << ((float)(executionEnd - executionStart)) / (CLOCKS_PER_SEC / 1000) << " ms" << endl;
 
         for (auto pair : cpuPairs)
         {
@@ -47,9 +53,15 @@ int main(int argc, char *argv[])
     else if (string(argv[2]) == "--gpu")
     {
         ofstream gpu_output("output_gpu.txt");
+        clock_t executionStart, executionEnd;
 
         cout << "Starting gpu" << endl;
+
+        executionStart = clock();
         auto gpuPairs = solveWithGpu(bitSequences);
+        executionEnd = clock();
+
+        cout << "Gpu took: " << ((float)(executionEnd - executionStart)) / (CLOCKS_PER_SEC / 1000) << " ms" << endl;
 
         for (auto pair : gpuPairs)
         {
