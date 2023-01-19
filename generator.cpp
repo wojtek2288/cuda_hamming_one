@@ -18,7 +18,7 @@ int main(int argc, char **argv)
 
     for (int i = 0; i < vectorCount; i++)
     {
-        if (i % 5 == 0 && i > 0)
+        if (i % 15 == 0 && i > 0)
         {
             int random_bit = rand() % vectorLength;
             previousVector[random_bit] = previousVector[random_bit] == '0' ? '1' : '0';
@@ -31,7 +31,7 @@ int main(int argc, char **argv)
             {
                 char current_bit = (rand() % 2) + '0';
                 out << current_bit;
-                if (i % 4 == 0 && i > 0)
+                if (i % 14 == 0 && i > 0)
                 {
                     previousVector += current_bit;
                 }

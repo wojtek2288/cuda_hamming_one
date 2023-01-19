@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <vector>
 using namespace std;
 
 bool checkHammingDistance(string s1, string s2)
@@ -22,6 +23,21 @@ bool checkHammingDistance(string s1, string s2)
     return distance == 1;
 }
 
+vector<string> split(string phrase, string delimiter)
+{
+    vector<string> list;
+    size_t pos = 0;
+    string token;
+    while ((pos = phrase.find(delimiter)) != string::npos)
+    {
+        token = phrase.substr(0, pos);
+        list.push_back(token);
+        phrase.erase(0, pos + delimiter.length());
+    }
+    list.push_back(phrase);
+    return list;
+}
+
 int main(int argc, char **argv)
 {
     if (argc != 2)
@@ -30,16 +46,15 @@ int main(int argc, char **argv)
     }
 
     ifstream file(argv[1]);
-    string line1, line2;
+    string line;
     int counter = 0;
 
-    while (getline(file, line1))
+    while (getline(file, line))
     {
-        if (counter % 2 == 0)
-        {
-            line2 = line1;
-        }
-        else if (!checkHammingDistance(line1, line2))
+        std::cout << counter << std::endl;
+        auto pair = split(line, ",");
+
+        if (!checkHammingDistance(pair[0], pair[1]))
         {
             cout << "Pair does not have a Hamming distance of 1" << endl;
             return 0;

@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
 
         for (auto pair : cpuPairs)
         {
-            cpu_output << pair.first << ", " << pair.second << endl;
+            cpu_output << pair.first << "," << pair.second << endl;
         }
 
         cpu_output.close();
@@ -65,7 +65,7 @@ int main(int argc, char *argv[])
 
         for (auto pair : gpuPairs)
         {
-            gpu_output << pair.first << ", " << pair.second << endl;
+            gpu_output << pair.first << "," << pair.second << endl;
         }
 
         gpu_output.close();
