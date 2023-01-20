@@ -25,22 +25,22 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
     }
 }
 
-// https://stackoverflow.com/questions/69278755/linear-index-for-a-diagonal-run-of-an-upper-triangular-matrix?noredirect=1&lq=1
-__global__ void findPairs(int *d_bitSequences, int *pairs, int vectorCount, int vectorLength)
+// https://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix
+__global__ void findPairs(int *d_bitSequences, int *pairs, int n, int len)
 {
-    long long unsigned int k = blockIdx.x * blockDim.x + threadIdx.x;
+    unsigned long long int k = blockIdx.x * blockDim.x + threadIdx.x;
 
-    if (k < vectorCount * (vectorCount - 1) / 2)
+    if (k < n * (n - 1) / 2)
     {
-        long long unsigned int i = vectorCount - 2 - floor(sqrt((float)(4 * vectorCount * (vectorCount - 1) - (8 * k) - 7)) / 2.0 - 0.5);
-        long long unsigned int j = k + i + 1 - vectorCount * (vectorCount - 1) / 2 + (vectorCount - i) * ((vectorCount - i) - 1) / 2;
+        unsigned long long int i = n - 2 - floor(sqrt((float)(-8 * k + 4 * n * (n - 1) - 7)) / 2.0 - 0.5);
+        unsigned long long int j = k + i + 1 - n * (n - 1) / 2 + (n - i) * ((n - i) - 1) / 2;
         i = j - i - 1;
 
         int hammingDistance = 0;
 
-        for (int l = 0; l < vectorLength; l++)
+        for (int l = 0; l < len; l++)
         {
-            hammingDistance += __popc(d_bitSequences[i * vectorLength + l] ^ d_bitSequences[j * vectorLength + l]);
+            hammingDistance += __popc(d_bitSequences[i * len + l] ^ d_bitSequences[j * len + l]);
             if (hammingDistance > 1)
             {
                 break;
@@ -54,10 +54,8 @@ __global__ void findPairs(int *d_bitSequences, int *pairs, int vectorCount, int 
     }
 }
 
-vector<pair<string, string>> solveWithGpu(vector<string> bitSequences)
+int solveWithGpu(vector<string> bitSequences)
 {
-    vector<pair<string, string>> pairs;
-
     int vectorCount = bitSequences.size();
     int vectorLength = bitSequences[0].length();
 
@@ -84,14 +82,11 @@ vector<pair<string, string>> solveWithGpu(vector<string> bitSequences)
 
     findPairs<<<blockCount, threadCount>>>(d_bitSequences, d_pairs, vectorCount, vectorLength);
 
-    gpuErrorCheck(cudaDeviceSynchronize());
     gpuErrorCheck(cudaMemcpy(h_pairs, d_pairs, sizeof(int), cudaMemcpyDeviceToHost));
     gpuErrorCheck(cudaFree(d_pairs));
     gpuErrorCheck(cudaFree(d_bitSequences));
 
-    std::cout << "Number of pairs: " << *h_pairs << std::endl;
-
     delete[] h_bitSequences;
 
-    return pairs;
+    return *h_pairs;
 }

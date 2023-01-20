@@ -1,7 +1,7 @@
 all: hamming-one generator check
 
 hamming-one: 
-	nvcc -o hamming-one main.cu gpu.cu cpu.cpp
+	nvcc -o hamming-one main.cu gpu.cu cpu.cpp -lcudart
 
 generator: 
 	nvcc -o generator generator.cpp
