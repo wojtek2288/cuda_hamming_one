@@ -26,7 +26,6 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 }
 
 // https://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix
-// https://stackoverflow.com/questions/69278755/linear-index-for-a-diagonal-run-of-an-upper-triangular-matrix?noredirect=1&lq=1
 __global__ void findPairs(int *d_bitSequences, int *pairs, unsigned long long int n, unsigned long long int len)
 {
     unsigned long long int k = blockIdx.x * blockDim.x + threadIdx.x;

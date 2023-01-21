@@ -10,7 +10,6 @@
 using namespace std;
 
 // https://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix
-// https://stackoverflow.com/questions/69278755/linear-index-for-a-diagonal-run-of-an-upper-triangular-matrix?noredirect=1&lq=1
 int solveWithCpu(vector<string> bitSequences)
 {
     int n = bitSequences.size();
