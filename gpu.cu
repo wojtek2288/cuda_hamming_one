@@ -25,35 +25,44 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
     }
 }
 
-__global__ void findHammingDistance(int *d_bitSequences, int *d_output, int vectorCount, int vectorLength)
+// https://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix
+__global__ void findPairs(int *d_bitSequences, int *pairs, long long n, long long len)
 {
-    int idx = blockIdx.x * blockDim.x + threadIdx.x;
-    if (idx >= vectorCount)
-        return;
-    for (int i = idx + 1; i < vectorCount; i++)
+    long long k = blockIdx.x * blockDim.x + threadIdx.x;
+
+    if (k < n * (n - 1) / 2)
     {
+        long long i = n - 2 - floor(sqrt((double)(-8 * k + 4 * n * (n - 1) - 7)) / 2.0 - 0.5);
+        long long j = k + i + 1 - n * (n - 1) / 2 + (n - i) * ((n - i) - 1) / 2;
+
         int hammingDistance = 0;
-        for (int j = 0; j < vectorLength; j++)
+
+        for (int l = 0; l < len; l++)
         {
-            hammingDistance += __popc(d_bitSequences[idx * vectorLength + j] ^ d_bitSequences[i * vectorLength + j]);
+            hammingDistance += __popc(d_bitSequences[i * len + l] ^ d_bitSequences[j * len + l]);
+            if (hammingDistance > 1)
+            {
+                break;
+            }
         }
+
         if (hammingDistance == 1)
         {
-            atomicAdd(&d_output[idx * vectorCount + i], 2);
+            atomicAdd(pairs, 1);
         }
     }
 }
 
-vector<pair<string, string>> solveWithGpu(vector<string> bitSequences)
+int solveWithGpu(vector<string> bitSequences)
 {
-    vector<pair<string, string>> pairs;
-
-    int vectorCount = bitSequences.size();
-    int vectorLength = bitSequences[0].length();
+    long long vectorCount = bitSequences.size();
+    long long vectorLength = bitSequences[0].length();
+    clock_t copyingStart, copyingEnd;
+    float timeTaken = 0;
 
     int *h_bitSequences = new int[vectorCount * vectorLength];
-    int *h_output = new int[vectorCount * vectorCount];
-    int *d_bitSequences, *d_output;
+    int *h_pairs = new int(0);
+    int *d_bitSequences, *d_pairs;
 
     for (int i = 0; i < vectorCount; i++)
     {
@@ -63,33 +72,33 @@ vector<pair<string, string>> solveWithGpu(vector<string> bitSequences)
         }
     }
 
-    std::fill_n(h_output, vectorCount * vectorCount, -1);
-
     gpuErrorCheck(cudaMalloc(&d_bitSequences, vectorCount * vectorLength * sizeof(int)));
-    gpuErrorCheck(cudaMalloc(&d_output, vectorCount * vectorCount * sizeof(int)));
+    gpuErrorCheck(cudaMalloc(&d_pairs, sizeof(int)));
+
+    copyingStart = clock();
     gpuErrorCheck(cudaMemcpy(d_bitSequences, h_bitSequences, vectorCount * vectorLength * sizeof(int), cudaMemcpyHostToDevice));
-    gpuErrorCheck(cudaMemcpy(d_output, h_output, vectorCount * vectorCount * sizeof(int), cudaMemcpyHostToDevice));
+    copyingEnd = clock();
+    timeTaken += ((float)(copyingEnd - copyingStart)) / (CLOCKS_PER_SEC / 1000);
 
-    int blockSize = 256;
-    int numBlocks = (vectorCount + blockSize - 1) / blockSize;
-    findHammingDistance<<<numBlocks, blockSize>>>(d_bitSequences, d_output, vectorCount, vectorLength);
-    gpuErrorCheck(cudaMemcpy(h_output, d_output, vectorCount * vectorCount * sizeof(int), cudaMemcpyDeviceToHost));
+    gpuErrorCheck(cudaMemset(d_pairs, 0, sizeof(int)));
 
-    for (int i = 0; i < vectorCount; i++)
-    {
-        for (int j = 0; j < vectorCount; j++)
-        {
-            if (h_output[i * vectorCount + j] != -1)
-            {
-                pairs.push_back({bitSequences[i], bitSequences[j]});
-            }
-        }
-    }
+    long long threadCount = 512;
+    long long n = vectorCount * (vectorCount - 1) / 2;
+    long long blockCount = (n + threadCount - 1) / threadCount + 1;
 
+    findPairs<<<blockCount, threadCount>>>(d_bitSequences, d_pairs, vectorCount, vectorLength);
+
+    copyingStart = clock();
+    gpuErrorCheck(cudaMemcpy(h_pairs, d_pairs, sizeof(int), cudaMemcpyDeviceToHost));
+    copyingEnd = clock();
+    timeTaken += ((float)(copyingEnd - copyingStart)) / (CLOCKS_PER_SEC / 1000);
+
+    cout << "Memory copying took: " << timeTaken << "ms" << endl;
+
+    gpuErrorCheck(cudaFree(d_pairs));
     gpuErrorCheck(cudaFree(d_bitSequences));
-    gpuErrorCheck(cudaFree(d_output));
-    delete[] h_bitSequences;
-    delete[] h_output;
 
-    return pairs;
+    delete[] h_bitSequences;
+
+    return *h_pairs;
 }

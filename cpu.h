@@ -2,4 +2,4 @@
 #include <vector>
 using namespace std;
 
-vector<pair<string, string>> solveWithCpu(vector<string> bitSequences);
+int solveWithCpu(vector<string> bitSequences);
