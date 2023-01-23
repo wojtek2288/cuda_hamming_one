@@ -26,14 +26,14 @@ inline void gpuAssert(cudaError_t code, const char *file, int line, bool abort =
 }
 
 // https://stackoverflow.com/questions/27086195/linear-index-upper-triangular-matrix
-__global__ void findPairs(int *d_bitSequences, int *pairs, unsigned long long int n, unsigned long long int len)
+__global__ void findPairs(int *d_bitSequences, int *pairs, long long n, long long len)
 {
-    unsigned long long int k = blockIdx.x * blockDim.x + threadIdx.x;
+    long long k = blockIdx.x * blockDim.x + threadIdx.x;
 
     if (k < n * (n - 1) / 2)
     {
-        unsigned long long int i = n - 2 - floor(sqrt((double)(-8 * k + 4 * n * (n - 1) - 7)) / 2.0 - 0.5);
-        unsigned long long int j = k + i + 1 - n * (n - 1) / 2.0 + (n - i) * ((n - i) - 1) / 2.0;
+        long long i = n - 2 - floor(sqrt((double)(-8 * k + 4 * n * (n - 1) - 7)) / 2.0 - 0.5);
+        long long j = k + i + 1 - n * (n - 1) / 2 + (n - i) * ((n - i) - 1) / 2;
 
         int hammingDistance = 0;
 
@@ -55,8 +55,8 @@ __global__ void findPairs(int *d_bitSequences, int *pairs, unsigned long long in
 
 int solveWithGpu(vector<string> bitSequences)
 {
-    unsigned long long int vectorCount = bitSequences.size();
-    unsigned long long int vectorLength = bitSequences[0].length();
+    long long vectorCount = bitSequences.size();
+    long long vectorLength = bitSequences[0].length();
     clock_t copyingStart, copyingEnd;
     float timeTaken = 0;
 
@@ -82,9 +82,9 @@ int solveWithGpu(vector<string> bitSequences)
 
     gpuErrorCheck(cudaMemset(d_pairs, 0, sizeof(int)));
 
-    unsigned long long int threadCount = 512;
-    unsigned long long int n = vectorCount * (vectorCount - 1) / 2;
-    unsigned long long int blockCount = (n + threadCount - 1) / threadCount + 1;
+    long long threadCount = 512;
+    long long n = vectorCount * (vectorCount - 1) / 2;
+    long long blockCount = (n + threadCount - 1) / threadCount + 1;
 
     findPairs<<<blockCount, threadCount>>>(d_bitSequences, d_pairs, vectorCount, vectorLength);
 
